@@ -1,6 +1,6 @@
 # Graph Community Detection with Girvan-Newman algorithm
 
-Build Girvan-Newman algorithm from cratch using Python
+Build Girvan-Newman algorithm from scratch using Python
 
 Using NetworkX to do the same thing and then compare the results.
 
