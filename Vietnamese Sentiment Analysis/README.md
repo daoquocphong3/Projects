@@ -1,4 +1,4 @@
-# Vietnamế Sentiment Analysis
+# Vietnamese Sentiment Analysis
 
 ## Crawl Data
 Using selenium to crawl data of mobile phones from Thegioididong and Shopee.
