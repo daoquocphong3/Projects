@@ -119,7 +119,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 ## Lessons learn in project:
 
 - The tasks diagram and the executoin are awkward.
-- It is better to create two separate dags: One for retrive daily github activies(run daily). And the other for create monthly report(run at first day of each month)
+- It is better to create two separated dags: One for retrive daily github activies(run daily). And the other for create monthly report(run at first day of each month)
 - That way the successful run would be all task run successfully. Then we can recieve email on retries or failures.
 - Cut the customed result message, cause that task is unecessary. Cause now each dags have a single purpose, there is only need to recieve successful dag run email.
 
