@@ -47,7 +47,19 @@ descendants | In the case of stories or polls, the total comment count.
 ### Task 1: Check first day of month
 - Use simple DML of Bigquery to check if today if a first day of month.
 
-![image](https://user-images.githubusercontent.com/55779400/219014222-bbf6d8cb-f98f-49a6-a49b-94a625445c00.png)
+``` python
+  t1 = BigQueryCheckOperator(
+        task_id="check_first_day_of_month",
+        sql="""
+            #StandardSQL
+            SELECT 
+                EXTRACT(DAY FROM DATE('{{ ds }}')) = 1
+        """,
+        use_legacy_sql=False,
+        gcp_conn_id=GCP_CNN,
+    )
+```
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014222-bbf6d8cb-f98f-49a6-a49b-94a625445c00.png) -->
 
 
 ### Task 2: Check if there is a yesterday table in GithubArchive Day dataset
@@ -57,7 +69,21 @@ descendants | In the case of stories or polls, the total comment count.
 
 More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/bigquery/docs/information-schema-intro)<br>
 
-![image](https://user-images.githubusercontent.com/55779400/219014148-3a555058-0b50-41ad-ac09-a7fbd67b86df.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014148-3a555058-0b50-41ad-ac09-a7fbd67b86df.png) -->
+```python
+    t2 = BigQueryCheckOperator(
+        task_id="check_githubarchive_day",
+        sql="""
+            #standardSQL
+            Select table_name
+            From `githubarchive.day.INFORMATION_SCHEMA.TABLES`
+            Where table_name = '{{ yesterday_ds_nodash }}' 
+        """,
+        use_legacy_sql=False,
+        trigger_rule='all_done',
+        gcp_conn_id=GCP_CNN,
+    )
+```
 
 
 ### Task 3: Write data to Github_Daily_Events table:
@@ -66,6 +92,8 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 ![image](https://user-images.githubusercontent.com/55779400/218974771-59eae5a6-8c20-45e5-b9de-4db194dd62d1.png)
 
+
+
 - The table is big, about 25 million rows for 31 days in January 2023. So I partitioned it by date to reduce the cost of query on table.
 - Ingestion time partitioning reduces stored size of table by putting date column to \_PARTITIONTIME(a pseudocolumn). 
 - But when I plug table into Google Data Studio, the \_PARTITIONTIME didn't appear so I choose Time-unit column partitioning instead.
@@ -73,11 +101,54 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 - More info about [BigQuery Partitioned Table](https://cloud.google.com/bigquery/docs/partitioned-tables?_ga=2.103336576.-1647680310.1670343964)
 - Query create table: <br>
 
-![image](https://user-images.githubusercontent.com/55779400/218955332-b0a72d8f-edf2-47f9-865f-d607b102c04e.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/218955332-b0a72d8f-edf2-47f9-865f-d607b102c04e.png) -->
+``` bigquery
+  CREATE TABLE `github_daily_events`
+  (
+    date DATE,
+    repo_id INT64,
+    repo_name STRING,
+    stars INT64,
+    forks INT64,
+    pushes INT64
+  )
+  PARTITION BY date
+  OPTIONS(
+    partition_expiration_days=Null,
+    require_partition_filter=true
+  );
+```
+
+
 
 #### Task 3 code:
 
-![image](https://user-images.githubusercontent.com/55779400/219014043-d6a85190-345c-4f15-a7e2-e7df9798eace.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014043-d6a85190-345c-4f15-a7e2-e7df9798eace.png) -->
+```python
+    t3 = BigQueryOperator(
+        task_id="write_to_github_daily_events",
+        sql=f"""
+            #standardSQL
+            SELECT
+                DATE("{'{{ yesterday_ds }}'}") as date,
+                repo.id as repo_id,
+                ANY_VALUE(repo.name HAVING MAX created_at)
+                 as repo_name,
+                COUNTIF(type = 'WatchEvent') as stars,
+                COUNTIF(type = 'ForkEvent') as forks,
+                COUNTIF(type = 'PushEvent') as pushes,
+            FROM `githubarchive.day.{'{{ yesterday_ds_nodash }}'}`
+            GROUP BY 
+                repo.id
+        """,
+        destination_dataset_table=f"{GCP_PJ}.{GCP_DATASET}.github_daily_events${'{{ yesterday_ds_nodash }}'}",
+        write_disposition="WRITE_TRUNCATE",
+        create_disposition="CREATE_NEVER",
+        allow_large_results=True,
+        use_legacy_sql=False,
+        gcp_conn_id=GCP_CNN,
+    )
+```
 
 - Query GithubArchive day yesterday table, group by repo.id, using countif get stars, forks, and pushes of the repos that day.
 - Repo.name can be changed, so there are many repo.names of the same repo.id. Even repo.name maybe unique and act as identifier or not, there is no guarantee, so group by must be done on repo.id not repo.name.
@@ -86,12 +157,41 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 - 'CREATE_NEVER' for create_disposition.
 
 ### Task 4: Check if the yesterday parition is Github_Daily_Events Table:
-<!-- ![image](https://user-images.githubusercontent.com/55779400/219002078-38f0a9b1-d77e-4efd-9adb-0a2fc4414640.png) -->
-![image](https://user-images.githubusercontent.com/55779400/219014359-b4b45e10-8467-4358-97a3-f7a73941b82f.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014359-b4b45e10-8467-4358-97a3-f7a73941b82f.png) -->
 
+```python
+    t4 = BigQueryCheckOperator(
+        task_id='check_after_write_to_github_daily_events',
+        sql=f"""
+            #standardSQL
+            SELECT *
+            FROM 
+                `{GCP_PJ}.{GCP_DATASET}.INFORMATION_SCHEMA.PARTITIONS`
+            WHERE 
+                table_name = 'github_daily_events'
+                AND partition_id = "{'{{ yesterday_ds_nodash }}'}"
+        """,
+        use_legacy_sql=False,
+        trigger_rule='all_success',
+        gcp_conn_id=GCP_CNN,
+    )
+  ```
+  
 ### Task 5: Branch Dummy task for show:
-<!-- ![image](https://user-images.githubusercontent.com/55779400/219002150-2e1f1206-d0b6-41f9-bbcb-ccf7b0bd755a.png) -->
-![image](https://user-images.githubusercontent.com/55779400/219014428-c3317c54-8adc-4b25-aa2e-6c4ac2fc850b.png)
+``` python
+    t5 = BigQueryCheckOperator(
+            task_id='dummy_branch_task',
+            sql="""
+            #standardSQL
+            select 1 as col
+            """,
+            use_legacy_sql=False,
+            trigger_rule='all_success',
+            gcp_conn_id=GCP_CNN,
+        )
+```
+
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014428-c3317c54-8adc-4b25-aa2e-6c4ac2fc850b.png) -->
 
 ### Task 6: Write Github_Montly_Report table:
 - The goal of this task is to create a table with summary monthly github activities.
@@ -99,8 +199,25 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 #### First I need to combile all the data of that month in github_daily_events table.
 
-![image](https://user-images.githubusercontent.com/55779400/219014481-f914d96e-79e7-4d75-b7a1-2ba19f9754dc.png)
-<!-- ![image](https://user-images.githubusercontent.com/55779400/219004561-9369cecf-888f-4d9b-b287-8563001bb297.png) -->
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014481-f914d96e-79e7-4d75-b7a1-2ba19f9754dc.png) -->
+```bigquery
+    WITH
+        github_agg AS(
+            SELECT
+                repo_id,
+                ANY_VALUE(repo_name
+                    HAVING
+                    max date) AS repo_name,
+                SUM(stars) AS stars_last_month,
+                SUM(forks) AS forks_last_month,
+                SUM(pushes) AS pushes_last_month,
+            FROM
+                `{GCP_PJ}.{GCP_DATASET}.github_daily_events`
+            WHERE
+                date >= DATE_ADD(CURRENT_DATE(), INTERVAL -1 month)
+            GROUP BY
+                repo_id),
+```
 
 - Use group by on repo_id column because it an identifier.
 - Get repo_id, sum of stars, forks, pushes for everday.
@@ -108,8 +225,24 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 #### Next job is to get all story in Hacker News dataset with url is a github repo.
 
-![image](https://user-images.githubusercontent.com/55779400/219014534-12990de6-f57c-4edd-af51-7b86a688db9f.png)
-<!-- ![image](https://user-images.githubusercontent.com/55779400/219006303-df1620e7-b7e6-41ff-84d8-1275b392842e.png) -->
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014534-12990de6-f57c-4edd-af51-7b86a688db9f.png) -->
+```bigquery
+    hn_agg AS (
+        SELECT
+            REGEXP_EXTRACT(url, 'https?://github.com/([^/]+/[^/#?]+)') AS url,
+            ANY_VALUE(title
+                HAVING
+                MAX score) AS title,
+            MAX(score) AS score
+        FROM
+            `bigquery-public-data.hacker_news.full`
+        WHERE
+            type = 'story'
+            AND url LIKE '%://github.com/%'
+            AND url NOT LIKE '%://github.com/blog/%'
+        GROUP BY
+            url)
+```
 
 - Get the url point to the repo_name of Github, title, and the score of these stories.
 - There are many stories point to the same url. I only chose the one with most score.
@@ -118,33 +251,166 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 #### Join those two table together and create the monthly report table:
 
-![image](https://user-images.githubusercontent.com/55779400/219014587-bf2d8f59-bbb0-4f61-a942-0b3bd04d91d5.png)
-<!-- ![image](https://user-images.githubusercontent.com/55779400/219008149-ac4dca3e-2d0c-47b3-8f6b-b77287c911fb.png) -->
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014587-bf2d8f59-bbb0-4f61-a942-0b3bd04d91d5.png) -->
+``` bigquery
+    SELECT
+        repo_id,
+        repo_name,
+        title AS hn_title,
+        score AS hn_score,
+        stars_last_month,
+        forks_last_month,
+        pushes_last_month
+    FROM
+        github_agg gh
+    LEFT JOIN
+        hn_agg hn
+    ON
+        gh.repo_name = hn.url
+```
+#### Whole task 6 code: 
+```python
+    t6 = BigQueryOperator(
+        task_id="write_to_github_monthly_report",
+        sql=f"""
+            #standardSQL
+            CREATE TABLE `{GCP_PJ}.{GCP_DATASET}.github_monthly_report_{
+                '{{ macros.ds_format(yesterday_ds, "%Y-%m-%d", "%m%Y") }}'}` as 
+            WITH
+                github_agg AS(
+                    SELECT
+                        repo_id,
+                        ANY_VALUE(repo_name
+                            HAVING
+                            max date) AS repo_name,
+                        SUM(stars) AS stars_last_month,
+                        SUM(forks) AS forks_last_month,
+                        SUM(pushes) AS pushes_last_month,
+                    FROM
+                        `{GCP_PJ}.{GCP_DATASET}.github_daily_events`
+                    WHERE
+                        date >= DATE_ADD(CURRENT_DATE(), INTERVAL -1 month)
+                    GROUP BY
+                        repo_id),
+
+                hn_agg AS (
+                    SELECT
+                        REGEXP_EXTRACT(url, 'https?://github.com/([^/]+/[^/#?]+)') AS url,
+                        ANY_VALUE(title
+                            HAVING
+                            MAX score) AS title,
+                        MAX(score) AS score
+                    FROM
+                        `bigquery-public-data.hacker_news.full`
+                    WHERE
+                        type = 'story'
+                        AND url LIKE '%://github.com/%'
+                        AND url NOT LIKE '%://github.com/blog/%'
+                    GROUP BY
+                        url)
+
+            SELECT
+                repo_id,
+                repo_name,
+                title AS hn_title,
+                score AS hn_score,
+                stars_last_month,
+                forks_last_month,
+                pushes_last_month
+            FROM
+                github_agg gh
+            LEFT JOIN
+                hn_agg hn
+            ON
+                gh.repo_name = hn.url
+        """,
+        write_disposition="WRITE_TRUNCATE",
+        create_disposition="CREATE_IF_NEEDED",
+        allow_large_results=True,
+        use_legacy_sql=False,
+        gcp_conn_id=GCP_CNN,
+    )
+```
 
 ### Task 7: Check if the GIthub_Montly_Report_ is added to dataset:
-![image](https://user-images.githubusercontent.com/55779400/219014627-d0f4d59d-8166-4db1-902b-81b89f890cc8.png)
-<!-- ![image](https://user-images.githubusercontent.com/55779400/219008883-d5f5e8a5-b497-4815-89c1-971374802f56.png) -->
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014627-d0f4d59d-8166-4db1-902b-81b89f890cc8.png) -->
+```python
+    t7 = BigQueryCheckOperator(
+        task_id='check_github_monthly_report',
+        sql=f"""
+            #standardSQL
+            SELECT table_name
+            FROM
+                `{GCP_PJ}.{GCP_DATASET}.INFORMATION_SCHEMA.TABLES`
+            WHERE
+                table_name = "github_monthly_report_{
+                '{{ macros.ds_format(yesterday_ds, "%Y-%m-%d", "%m%Y") }}'}"
+        """,
+        use_legacy_sql=False,
+        trigger_rule='all_success',
+        gcp_conn_id=GCP_CNN,
+    )
+```
 
 ### Task 8: Print result message:
 - Use PythonOperator to check every state of others task.
 - Depend on state of each task print out message, like in the code: 
 
-![image](https://user-images.githubusercontent.com/55779400/219014680-fa906919-4859-4503-9f4b-e99101377e09.png)
-<!-- ![image](https://user-images.githubusercontent.com/55779400/219009931-086a6745-7c4f-4d4f-9769-be4b5cb2b888.png) -->
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014680-fa906919-4859-4503-9f4b-e99101377e09.png) -->
+```python
+    def print_result(**kwargs):
+        # state is 1 if success, 0 for others
+        succes_states1 = [0, 1, 1, 1, 0, 0, 0]
+        message1 = 'Write yesterday parition into github events succesfully!'
+
+        succes_states2 = [1, 1, 1, 1, 1, 1, 1]
+        message2 = '''Write yesterday parition into github events succesfully!
+                    Previous month github report table write succesfully!'''
+
+        real_states = []
+
+        date = kwargs['execution_date']
+        task_operators = [t1, t2, t3, t4, t5, t6, t7]
+
+        for task_op in task_operators:
+            ti = TaskInstance(task_op, date)
+            state = ti.current_state()
+            state_code = 1 if state == 'success' else 0
+            real_states.append(state_code)
+
+        if real_states == succes_states1:
+            print('----------------------------------------')
+            print(message1)
+        elif real_states == succes_states2:
+            print('----------------------------------------')
+            print(message2)
+        else:
+            print('----------------------------------------')
+            print(f'ETL failed to run for {datetime.date(datetime.now())}')
+
+    t8 = PythonOperator(
+        task_id='Print_result_of_github_ETL',
+        provide_context=True,
+        python_callable=print_result,
+        trigger_rule='all_done'
+    )
+```
 
 ## Result: 
 ### Graph: Airflow tasks diagram:
 ![image](https://user-images.githubusercontent.com/55779400/218958413-aed328f0-0ac0-47b6-9db1-4dcc5f6ac187.png)
 
-### Execution: 
+### Execution from 2023-01-02 to 2023-02-01 (2 Jan to 1 Feb):
 <!-- ![image](https://user-images.githubusercontent.com/55779400/219010478-6b9a5566-c0cd-4807-928e-2766527bf766.png) -->
 ![image](https://user-images.githubusercontent.com/55779400/219011214-55c4ec20-9787-4d1e-bd17-877ebbd770c8.png)
 
 
-## Lessons learn in project:
+## Lessons learn after this project: 
 
 - The tasks diagram and the executoin are awkward.
-- It is better to create two separated dags: One for retrive daily github activies(run daily). And the other for create monthly report(run at first day of each month)
+- It is better to create two separated dags:
+    - One for retrive daily github activies(run daily). 
+    - And the other for create monthly report(run at first day of each month)
 - That way the successful run would be all task run successfully. Then we can recieve email on retries or failures.
 - Cut the customed result message, cause that task is unecessary. Cause now each dags have a single purpose, there is only need to recieve successful dag run email.
 
