@@ -247,7 +247,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 - Get the url point to the repo_name of Github, title, and the score of these stories.
 - There are many stories point to the same url. I only chose the one with most score.
 - Each story only appears in one row and the score is update in that row (I guess cause there no more clarificaiton on the score matter) so I ignore creation date of the event.
-- Use REGEXP_EXTRACT only the the repo_name (cut of "htpps://" )
+- Use REGEXP_EXTRACT only the the repo_name (cut off "htpps://" )
 
 #### Join those two table together and create the monthly report table:
 
@@ -268,6 +268,9 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
     ON
         gh.repo_name = hn.url
 ```
+- Use LEFT JOIN cause I wanted to preserve all rows in github_agg. If repos don't have Hacker News story, title and score will be null.
+- There may have lots of Hacker News story about some repo, but repo changed name so they don't match with the url. The simpliest way to solve this problem is to store repo_name as an array and JOIN ON `hn.url in gh.repo_name`, but for this project I just leave it that way.
+
 #### Whole task 6 code: 
 ```python
     t6 = BigQueryOperator(
@@ -353,9 +356,6 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 ```
 
 ### Task 8: Print result message:
-- Use PythonOperator to check every state of others task.
-- Depend on state of each task print out message, like in the code: 
-
 <!-- ![image](https://user-images.githubusercontent.com/55779400/219014680-fa906919-4859-4503-9f4b-e99101377e09.png) -->
 ```python
     def print_result(**kwargs):
@@ -395,6 +395,9 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
         trigger_rule='all_done'
     )
 ```
+
+- Use PythonOperator to check every state of others task.
+- Depend on state of each task print out message, like in the code: 
 
 ## Result: 
 ### Graph: Airflow tasks diagram:
