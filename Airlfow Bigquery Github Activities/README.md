@@ -209,9 +209,9 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
                 ANY_VALUE(repo_name
                     HAVING
                     max date) AS repo_name,
-                SUM(stars) AS stars_last_month,
-                SUM(forks) AS forks_last_month,
-                SUM(pushes) AS pushes_last_month,
+                SUM(stars) AS stars_this_month,
+                SUM(forks) AS forks_this_month,
+                SUM(pushes) AS pushes_this_month,
             FROM
                 `{GCP_PJ}.{GCP_DATASET}.github_daily_events`
             WHERE
@@ -259,9 +259,9 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
         repo_name,
         title AS hn_title,
         score AS hn_score,
-        stars_last_month,
-        forks_last_month,
-        pushes_last_month
+        stars_this_month,
+        forks_this_month,
+        pushes_this_month
     FROM
         github_agg gh
     LEFT JOIN
@@ -288,9 +288,9 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
                         ANY_VALUE(repo_name
                             HAVING
                             max date) AS repo_name,
-                        SUM(stars) AS stars_last_month,
-                        SUM(forks) AS forks_last_month,
-                        SUM(pushes) AS pushes_last_month,
+                        SUM(stars) AS stars_this_month,
+                        SUM(forks) AS forks_this_month,
+                        SUM(pushes) AS pushes_this_month,
                     FROM
                         `{GCP_PJ}.{GCP_DATASET}.github_daily_events`
                     WHERE
@@ -319,9 +319,9 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
                 repo_name,
                 title AS hn_title,
                 score AS hn_score,
-                stars_last_month,
-                forks_last_month,
-                pushes_last_month
+                stars_this_month,
+                forks_this_month,
+                pushes_this_month
             FROM
                 github_agg gh
             LEFT JOIN
