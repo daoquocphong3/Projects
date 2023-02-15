@@ -222,7 +222,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 - Use group by on repo_id column because it is an identifier.
 - Get repo_id, the sum of stars, forks, and pushes for every day.
-- Repo_name like before can be changed in that month, so I only get the repo_name on the last day.
+- Repo_name can be changed in that month, so I only get the repo_name on the last day.
 
 #### Next job is to get all story in Hacker News dataset with url is a github repo.
 
@@ -413,7 +413,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 - I control the task flow by the trigger_rule, `"all_done"` for task2 - `"check_githubarchive_day"` in case task1 failed, and task8 - `"Print_result_of_github_ETL"`, `"all_success"` by default for other tasks.
 - The reason of task4 - `"check_after_write_to_github_daily_events"` is upstream of task8 - `"Print_result_of_github_ETL"` is to wait for task4 to complete. If not task8 may run before task4 is completed and print an error message result.
-- If task5 `"dummy_branch_task"` is a real task and took a long time to complete, there will be a need for task5 upstream of task8, in case task4 failed as explained before.
+- If task5 `"dummy_branch_task"` is a real task and took a long time to complete, there will be a need for task5 upstream of task8, in case task4 failed as explained above.
 
 ### Execution from 2023-01-02 to 2023-02-01 (2 Jan to 1 Feb):
 <!-- ![image](https://user-images.githubusercontent.com/55779400/219010478-6b9a5566-c0cd-4807-928e-2766527bf766.png) -->
