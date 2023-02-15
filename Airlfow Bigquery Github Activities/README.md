@@ -1,26 +1,27 @@
 # Airflow Pineline BigQuery Github Acticvities (Monthly report)
 
 ## Dataset:
-In this project I use 2 public dataset of google Bigquery: Github Archive and Hacker News
+In this project, I use 2 public datasets of google Bigquery: Github Archive and Hacker News
 ### Github Archive:
 You can look at the dataset here: [GithubArchive](https://console.cloud.google.com/bigquery?project=githubarchive&page=project) - [More_Information](https://www.gharchive.org/)
 
-- Github Archive is a project of capture every activity of all public projects in github. <br>
-- It's have 3 dataset: Day, Month, Year <br>
-- In this project I use dataset Day. <br>
-- Each table in the Day dataset is a day and capture all activity of that day. Like below:<br>
+- GitHub Archive is a project of captures every activity of all public projects in GitHub. <br>
+- It has 3 datasets: Day, Month, Year <br>
+- In this project, I use dataset Day. <br>
+- Each table in the Day dataset is a day and captures all activity of that day. Like below:<br>
 ![image](https://user-images.githubusercontent.com/55779400/218960697-6b4bde98-6f49-4533-8c9d-50ebb42c25a6.png)
 
-- This is the schema of each table: <br>
+- This is the schema of each day table: <br>
 
-![image](https://user-images.githubusercontent.com/55779400/218961000-62704aab-1df4-42d2-b8b4-ca0ea2d90ad0.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/218961000-62704aab-1df4-42d2-b8b4-ca0ea2d90ad0.png) -->
+![image](https://user-images.githubusercontent.com/55779400/219074652-dfad8bc3-03d6-4e8f-bc3d-e67f4918aef5.png)
 
 ### Hacker News:
 You can look at the dataset here: [HackerNews](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=hacker_news&page=dataset&project=apply-ds-test-371316) - [More_Information](https://github.com/HackerNews/API)
 
 - Hacker News is a social news website focusing on computer science and entrepreneurship.
-- This dataset contains a randomized sample of roughly one quarter of all stories and comments from Hacker News from its launch in 2006. 
-- In this dataset I use table Full.
+- This dataset contains a randomized sample of roughly one-quarter of all stories and comments from Hacker News from its launch in 2006. 
+- In this dataset, I use table Full.
 - Schema of the Full table: <br>
 
 <!-- ![image](https://user-images.githubusercontent.com/55779400/218963958-297ecf3e-5b83-4b90-b7c2-49fd854d0118.png) -->
@@ -64,8 +65,8 @@ descendants | In the case of stories or polls, the total comment count.
 
 ### Task 2: Check if there is a yesterday table in GithubArchive Day dataset
 - Use INFORMATION_SCHEMA.TABLES filter table_name to only yesterday <br>
-- If yesterday table is available, the query result is table_name (yesterday_ds_nodash like: 20230101)
-- If there no yesterday table, the query not return anything.
+- If yesterday table is available, the query result is table_name (yesterday_ds_nodash like:  20230101)
+- If there is no yesterday table, the query does not return anything.
 
 More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/bigquery/docs/information-schema-intro)<br>
 
@@ -87,19 +88,19 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 
 ### Task 3: Write data to Github_Daily_Events table:
-- Github_daily_events table stores data of every github repo.
-- Each line is a date, repo_id, repo_name and it's stars, forks, pushes. Example of rows in table: <br>
+- Github_daily_events table stores data of every GitHub repo.
+- Each line is a date, repo_id, repo_name and it's stars, forks, pushes. Example of rows in the table: <br>
 
 ![image](https://user-images.githubusercontent.com/55779400/218974771-59eae5a6-8c20-45e5-b9de-4db194dd62d1.png)
 
 
 
-- The table is big, about 25 million rows for 31 days in January 2023. So I partitioned it by date to reduce the cost of query on table.
-- Ingestion time partitioning reduces stored size of table by putting date column to \_PARTITIONTIME(a pseudocolumn). 
-- But when I plug table into Google Data Studio, the \_PARTITIONTIME didn't appear so I choose Time-unit column partitioning instead.
-- Btw [PyPI package downloads](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=pypi&page=dataset&project=apply-ds-test-371316) table is Time-unit column paritioning too, each partition contains on average 700 million rows.
+- The table is big, with about 25 million rows for 31 days in January 2023. So I partitioned it by date to reduce the cost of querying on the table.
+- Ingestion time partitioning reduces the stored size of the table by putting the date column to \_PARTITIONTIME(a pseudocolumn). 
+- But when I plug the table into Google Data Studio, the \_PARTITIONTIME didn't appear so I choose Time-unit column partitioning instead.
+- By the way, [PyPI package downloads](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=pypi&page=dataset&project=apply-ds-test-371316) table is Time-unit column partitioning too, each partition contains on average 700 million rows.
 - More info about [BigQuery Partitioned Table](https://cloud.google.com/bigquery/docs/partitioned-tables?_ga=2.103336576.-1647680310.1670343964)
-- Query create table: <br>
+- Query create the Github_daily_events table: <br>
 
 <!-- ![image](https://user-images.githubusercontent.com/55779400/218955332-b0a72d8f-edf2-47f9-865f-d607b102c04e.png) -->
 ``` bigquery
@@ -150,10 +151,10 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
     )
 ```
 
-- Query GithubArchive day yesterday table, group by repo.id, using countif get stars, forks, and pushes of the repos that day.
-- Repo.name can be changed, so there are many repo.names of the same repo.id. Even repo.name maybe unique and act as identifier or not, there is no guarantee, so group by must be done on repo.id not repo.name.
-- For repo.name, I only chose the one appear last (max create_at) using [Aggregate functions of BigQuery](https://cloud.google.com/bigquery/docs/reference/standard-sql/aggregate_functions) - ANY_VALUE.
-- Write directly into the yesterday partition of table, and 'WRITE_TRUNCATE' in case they already have data so there is no duplicate rows.
+- Query GithubArchive day yesterday table, group by repo.id, using countif to get stars, forks, and pushes of the repos that day.
+- Even repo.name may be unique and act as an identifier or not, there is no guarantee, but repo.name can be changed, there are many repo.names of the same repo.id. For that reason, group by must be done on repo.id not repo.name.
+- For repo.name, I only chose the one appeare last (max create_at) using [Aggregate functions of BigQuery](https://cloud.google.com/bigquery/docs/reference/standard-sql/aggregate_functions) - ANY_VALUE.
+- Write directly into the yesterday partition of the table, and 'WRITE_TRUNCATE' in case they already have data, truncate it, then write, there will be no duplicate rows in the partition.
 - 'CREATE_NEVER' for create_disposition.
 
 ### Task 4: Check if the yesterday parition is Github_Daily_Events Table:
@@ -194,7 +195,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 <!-- ![image](https://user-images.githubusercontent.com/55779400/219014428-c3317c54-8adc-4b25-aa2e-6c4ac2fc850b.png) -->
 
 ### Task 6: Write Github_Montly_Report table:
-- The goal of this task is to create a table with summary monthly github activities.
+- The goal of this task is to create a table with a summary of monthly GitHub activities.
 - I use CTEs so there is no need to create more tables.
 
 #### First I need to combile all the data of that month in github_daily_events table.
@@ -219,8 +220,8 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
                 repo_id),
 ```
 
-- Use group by on repo_id column because it an identifier.
-- Get repo_id, sum of stars, forks, pushes for everday.
+- Use group by on repo_id column because it is an identifier.
+- Get repo_id, the sum of stars, forks, and pushes for every day.
 - Repo_name like before can be changed in that month, so I only get the repo_name on the last day.
 
 #### Next job is to get all story in Hacker News dataset with url is a github repo.
@@ -245,8 +246,8 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 ```
 
 - Get the url point to the repo_name of Github, title, and the score of these stories.
-- There are many stories point to the same url. I only chose the one with most score.
-- Each story only appears in one row and the score is update in that row (I guess cause there no more clarificaiton on the score matter) so I ignore creation date of the event.
+- There are many stories pointing to the same url. I only chose the one with the most score.
+- Each story only appears in one row and the score is updated in that row (I guess, there is no more clarification on the score matter) so I ignore creation date of the event.
 - Use REGEXP_EXTRACT only the the repo_name (cut off "htpps://" )
 
 #### Join those two table together and create the monthly report table:
@@ -268,8 +269,9 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
     ON
         gh.repo_name = hn.url
 ```
-- Use LEFT JOIN cause I wanted to preserve all rows in github_agg. If repos don't have Hacker News story, title and score will be null.
-- There may have lots of Hacker News story about some repo, but repo changed name so they don't match with the url. The simpliest way to solve this problem is to store repo_name as an array and JOIN ON `hn.url in gh.repo_name`, but for this project I just leave it that way.
+- Use LEFT JOIN cause I wanted to preserve all rows in github_agg. If repos don't have any Hacker News stories, the title and score will be null.
+- Some repos are changed name so they don't match the url that Hacker News point to. The simplest way to solve this problem is to store repo_name as an array and `LEFT JOIN ON hn.url in gh.repo_name`.
+- Since most of the repos that changed name are not popular, for this project I leave it that way.
 
 #### Whole task 6 code: 
 ```python
@@ -396,27 +398,38 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
     )
 ```
 
-- Use PythonOperator to check every state of others task.
-- Depend on state of each task print out message, like in the code: 
-
+- Use PythonOperator to check every state of other tasks.
+- Depending on the state of each task print out the message, like in the code: 
+### Task flow: 
+```
+    t1 >> t2 >> t3 >> t4 >> t6
+    t1 >> t5 >> t6 >> t7 >> t8
+    t4 >> t8
+ ```
+ 
 ## Result: 
 ### Graph: Airflow tasks diagram:
 ![image](https://user-images.githubusercontent.com/55779400/218958413-aed328f0-0ac0-47b6-9db1-4dcc5f6ac187.png)
+
+- I control the task flow by the trigger_rule, `"all_done"` for task2 - `"check_githubarchive_day"` in case task1 failed, and task8 - `"Print_result_of_github_ETL"`, `"all_success"` by default for other tasks.
+- The reason of task4 - `"check_after_write_to_github_daily_events"` is upstream of task8 - `"Print_result_of_github_ETL"` is to wait for task4 to complete. If not task8 may run before task4 is completed and print an error message result.
+- If task5 `"dummy_branch_task"` is a real task and took a long time to complete, there will be a need for task5 upstream of task8, in case task4 failed as explained before.
 
 ### Execution from 2023-01-02 to 2023-02-01 (2 Jan to 1 Feb):
 <!-- ![image](https://user-images.githubusercontent.com/55779400/219010478-6b9a5566-c0cd-4807-928e-2766527bf766.png) -->
 ![image](https://user-images.githubusercontent.com/55779400/219011214-55c4ec20-9787-4d1e-bd17-877ebbd770c8.png)
 
+- As expected, task1 only run on 01/02/2023, and on that day all tasks are completed successfully.
+- Other days, only 3 tasks were completed successfully.
 
 ## Lessons learn after this project: 
 
-- The tasks diagram and the executoin are awkward.
+- The task diagram and the execution are awkward.
 - It is better to create two separated dags:
-    - One for retrive daily github activies(run daily). 
-    - And the other for create monthly report(run at first day of each month)
-- That way the successful run would be all task run successfully. Then we can recieve email on retries or failures.
-- Cut the customed result message task, cause that is unecessary. Now each dag has a single duty, there is only need to recieve successful dag run email.
-
+    - One for retrieving daily GitHub activities (run daily).
+    - And the other is for creating monthly reports (run on the first day of each month)
+- That way the successful run would be all task run successfully. Then we can receive emails on retries or failures.
+- Cut the customed result message task, cause that is unnecessary. Now each dag has a single duty, there is only a need to receive successful dag_run emails.
 
 
 
