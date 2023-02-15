@@ -21,17 +21,34 @@ You can look at the dataset here: [HackerNews](https://console.cloud.google.com/
 - Hacker News is a social news website focusing on computer science and entrepreneurship.
 - This dataset contains a randomized sample of roughly one quarter of all stories and comments from Hacker News from its launch in 2006. 
 - In this dataset I use table Full.
-- Schema of the Full table: <br>![image](https://user-images.githubusercontent.com/55779400/218963958-297ecf3e-5b83-4b90-b7c2-49fd854d0118.png)
+- Schema of the Full table: <br>
+
+<!-- ![image](https://user-images.githubusercontent.com/55779400/218963958-297ecf3e-5b83-4b90-b7c2-49fd854d0118.png) -->
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219014949-def95133-9f0a-4d39-a177-aa421a4e9193.png) -->
+Field | Description
+------|------------
+**id** | The item's unique id.
+deleted | `true` if the item is deleted.
+type | The type of item. One of "job", "story", "comment", "poll", or "pollopt".
+by | The username of the item's author.
+time | Creation date of the item, in [Unix Time](http://en.wikipedia.org/wiki/Unix_time).
+text | The comment, story or poll text. HTML.
+dead | `true` if the item is dead.
+parent | The comment's parent: either another comment or the relevant story.
+poll | The pollopt's associated poll.
+kids | The ids of the item's comments, in ranked display order.
+url | The URL of the story.
+score | The story's score, or the votes for a pollopt.
+title | The title of the story, poll or job. HTML.
+parts | A list of related pollopts, in display order.
+descendants | In the case of stories or polls, the total comment count.
 
 ## Tasks:
 ### Task 1: Check first day of month
 - Use simple DML of Bigquery to check if today if a first day of month.
 
-![image](https://user-images.githubusercontent.com/55779400/218970128-6e64a5b5-daf0-4cf5-9b5d-4200c73372ef.png)
+![image](https://user-images.githubusercontent.com/55779400/219014222-bbf6d8cb-f98f-49a6-a49b-94a625445c00.png)
 
-<!-- ![image](https://user-images.githubusercontent.com/55779400/218970013-25f7d59d-6347-461e-94a1-da6b4d678e35.png) -->
-
-<!-- ![image](https://user-images.githubusercontent.com/55779400/218966517-39ee5bd4-1b2e-4bab-af6d-4900302cf32b.png)<br> -->
 
 ### Task 2: Check if there is a yesterday table in GithubArchive Day dataset
 - Use INFORMATION_SCHEMA.TABLES filter table_name to only yesterday <br>
@@ -40,7 +57,8 @@ You can look at the dataset here: [HackerNews](https://console.cloud.google.com/
 
 More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/bigquery/docs/information-schema-intro)<br>
 
-![image](https://user-images.githubusercontent.com/55779400/218970243-516fb562-81c0-44e2-b6e7-36ce87dedab7.png)
+![image](https://user-images.githubusercontent.com/55779400/219014148-3a555058-0b50-41ad-ac09-a7fbd67b86df.png)
+
 
 ### Task 3: Write data to Github_Daily_Events table:
 - Github_daily_events table stores data of every github repo.
@@ -48,18 +66,18 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 ![image](https://user-images.githubusercontent.com/55779400/218974771-59eae5a6-8c20-45e5-b9de-4db194dd62d1.png)
 
-- The table is big for data 25.016.299 rows for 31 days in January 2023. So I partitioned it by date to reduce the cost of query on table.
+- The table is big, about 25 million rows for 31 days in January 2023. So I partitioned it by date to reduce the cost of query on table.
 - Ingestion time partitioning reduces stored size of table by putting date column to \_PARTITIONTIME(a pseudocolumn). 
 - But when I plug table into Google Data Studio, the \_PARTITIONTIME didn't appear so I choose Time-unit column partitioning instead.
-- Btw [PyPI package downloads](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=pypi&page=dataset&project=apply-ds-test-371316) table is Time-unit column paritioning too, each partition contains on average 700 mil rows.
+- Btw [PyPI package downloads](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=pypi&page=dataset&project=apply-ds-test-371316) table is Time-unit column paritioning too, each partition contains on average 700 million rows.
 - More info about [BigQuery Partitioned Table](https://cloud.google.com/bigquery/docs/partitioned-tables?_ga=2.103336576.-1647680310.1670343964)
 - Query create table: <br>
 
 ![image](https://user-images.githubusercontent.com/55779400/218955332-b0a72d8f-edf2-47f9-865f-d607b102c04e.png)
 
-- **Task 3 code:**
+#### Task 3 code:
 
-![image](https://user-images.githubusercontent.com/55779400/218998819-fb441eca-2dc8-4606-b89e-188421bbf740.png)
+![image](https://user-images.githubusercontent.com/55779400/219014043-d6a85190-345c-4f15-a7e2-e7df9798eace.png)
 
 - Query GithubArchive day yesterday table, group by repo.id, using countif get stars, forks, and pushes of the repos that day.
 - Repo.name can be changed, so there are many repo.names of the same repo.id. Even repo.name maybe unique and act as identifier or not, there is no guarantee, so group by must be done on repo.id not repo.name.
@@ -68,10 +86,12 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 - 'CREATE_NEVER' for create_disposition.
 
 ### Task 4: Check if the yesterday parition is Github_Daily_Events Table:
-![image](https://user-images.githubusercontent.com/55779400/219002078-38f0a9b1-d77e-4efd-9adb-0a2fc4414640.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219002078-38f0a9b1-d77e-4efd-9adb-0a2fc4414640.png) -->
+![image](https://user-images.githubusercontent.com/55779400/219014359-b4b45e10-8467-4358-97a3-f7a73941b82f.png)
 
 ### Task 5: Branch Dummy task for show:
-![image](https://user-images.githubusercontent.com/55779400/219002150-2e1f1206-d0b6-41f9-bbcb-ccf7b0bd755a.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219002150-2e1f1206-d0b6-41f9-bbcb-ccf7b0bd755a.png) -->
+![image](https://user-images.githubusercontent.com/55779400/219014428-c3317c54-8adc-4b25-aa2e-6c4ac2fc850b.png)
 
 ### Task 6: Write Github_Montly_Report table:
 - The goal of this task is to create a table with summary monthly github activities.
@@ -79,7 +99,8 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 #### First I need to combile all the data of that month in github_daily_events table.
 
-![image](https://user-images.githubusercontent.com/55779400/219004561-9369cecf-888f-4d9b-b287-8563001bb297.png)
+![image](https://user-images.githubusercontent.com/55779400/219014481-f914d96e-79e7-4d75-b7a1-2ba19f9754dc.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219004561-9369cecf-888f-4d9b-b287-8563001bb297.png) -->
 
 - Use group by on repo_id column because it an identifier.
 - Get repo_id, sum of stars, forks, pushes for everday.
@@ -87,7 +108,8 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 #### Next job is to get all story in Hacker News dataset with url is a github repo.
 
-![image](https://user-images.githubusercontent.com/55779400/219006303-df1620e7-b7e6-41ff-84d8-1275b392842e.png)
+![image](https://user-images.githubusercontent.com/55779400/219014534-12990de6-f57c-4edd-af51-7b86a688db9f.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219006303-df1620e7-b7e6-41ff-84d8-1275b392842e.png) -->
 
 - Get the url point to the repo_name of Github, title, and the score of these stories.
 - There are many stories point to the same url. I only chose the one with most score.
@@ -96,16 +118,19 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 #### Join those two table together and create the monthly report table:
 
-![image](https://user-images.githubusercontent.com/55779400/219008149-ac4dca3e-2d0c-47b3-8f6b-b77287c911fb.png)
+![image](https://user-images.githubusercontent.com/55779400/219014587-bf2d8f59-bbb0-4f61-a942-0b3bd04d91d5.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219008149-ac4dca3e-2d0c-47b3-8f6b-b77287c911fb.png) -->
 
 ### Task 7: Check if the GIthub_Montly_Report_ is added to dataset:
-![image](https://user-images.githubusercontent.com/55779400/219008883-d5f5e8a5-b497-4815-89c1-971374802f56.png)
+![image](https://user-images.githubusercontent.com/55779400/219014627-d0f4d59d-8166-4db1-902b-81b89f890cc8.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219008883-d5f5e8a5-b497-4815-89c1-971374802f56.png) -->
 
 ### Task 8: Print result message:
 - Use PythonOperator to check every state of others task.
 - Depend on state of each task print out message, like in the code: 
 
-![image](https://user-images.githubusercontent.com/55779400/219009931-086a6745-7c4f-4d4f-9769-be4b5cb2b888.png)
+![image](https://user-images.githubusercontent.com/55779400/219014680-fa906919-4859-4503-9f4b-e99101377e09.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/219009931-086a6745-7c4f-4d4f-9769-be4b5cb2b888.png) -->
 
 ## Result: 
 ### Graph: Airflow tasks diagram:
@@ -130,8 +155,4 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 
 ## Reference: 
-- This project is inspired by [Tuan Vu](https://www.youtube.com/@tuan-vu), who make this [airflow tutorial](https://www.youtube.com/watch?v=wAyu5BN3VpY&list=PLYizQ5FvN6pvIOcOd6dFZu3lQqc6zBGp2&index=6) on Youtube. 
-- Big thank for him to help me learn Airflow and help me develop this project.
-- The datasets used in this project are the same but the idea of this project is little different from the tutorial, and there are some errors in the tutorial that I will point out later.
-- The code of tutorial is kind of old (3 years ago) so I need to read documentaries of BigQuery and some others to write most of the code.
-
+- This project is inspired by [Tuan Vu](https://www.youtube.com/@tuan-vu), who make this [airflow tutorial](https://www.youtube.com/watch?v=wAyu5BN3VpY&list=PLYizQ5FvN6pvIOcOd6dFZu3lQqc6zBGp2&index=6) on Youtube.
