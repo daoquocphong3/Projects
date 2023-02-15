@@ -408,14 +408,14 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
  ```
  
 ## Result: 
-### Graph: Airflow tasks diagram:
+### Graph: Airflow task flow diagram:
 ![image](https://user-images.githubusercontent.com/55779400/218958413-aed328f0-0ac0-47b6-9db1-4dcc5f6ac187.png)
 
 - I control the task flow by the trigger_rule, `"all_done"` for task2 - `"check_githubarchive_day"` in case task1 failed, and task8 - `"Print_result_of_github_ETL"`, `"all_success"` by default for other tasks.
 - The reason of task4 - `"check_after_write_to_github_daily_events"` is upstream of task8 - `"Print_result_of_github_ETL"` is to wait for task4 to complete. If not task8 may run before task4 is completed and print an error message result.
 - If task5 `"dummy_branch_task"` is a real task and took a long time to complete, there will be a need for task5 upstream of task8, in case task4 failed as explained above.
 
-### Execution from 2023-01-02 to 2023-02-01 (2 Jan to 1 Feb):
+### Execution grid from 2023-01-02 to 2023-02-01 (2 Jan to 1 Feb):
 <!-- ![image](https://user-images.githubusercontent.com/55779400/219010478-6b9a5566-c0cd-4807-928e-2766527bf766.png) -->
 ![image](https://user-images.githubusercontent.com/55779400/219011214-55c4ec20-9787-4d1e-bd17-877ebbd770c8.png)
 
@@ -424,7 +424,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 ## Lessons learn after this project: 
 
-- The task diagram and the execution are awkward.
+- The task flow diagram and the execution grid are awkward.
 - It is better to create two separated dags:
     - One for retrieving daily GitHub activities (run daily).
     - And the other is for creating monthly reports (run on the first day of each month)
