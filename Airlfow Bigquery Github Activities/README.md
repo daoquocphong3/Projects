@@ -136,7 +136,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 ### Graph: Airflow tasks diagram:
 ![image](https://user-images.githubusercontent.com/55779400/218958413-aed328f0-0ac0-47b6-9db1-4dcc5f6ac187.png)
 
-### Exercution: 
+### Execution: 
 <!-- ![image](https://user-images.githubusercontent.com/55779400/219010478-6b9a5566-c0cd-4807-928e-2766527bf766.png) -->
 ![image](https://user-images.githubusercontent.com/55779400/219011214-55c4ec20-9787-4d1e-bd17-877ebbd770c8.png)
 
