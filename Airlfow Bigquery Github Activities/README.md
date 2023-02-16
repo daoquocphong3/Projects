@@ -1,4 +1,8 @@
 # Airflow Pineline BigQuery Github Acticvities (Monthly report)
+## Visualization: 
+Here is Google Data Stuido DashBoard for the results table: [GitHub Activities Jan 2023](https://lookerstudio.google.com/s/nNe2JozhK88)<br>
+- Star and Hacker News Score are for the popularity of Repo.
+- Forks and Push are for the developing status of repo.
 
 ## Dataset:
 In this project, I use 2 public datasets of google Bigquery: Github Archive and Hacker News
