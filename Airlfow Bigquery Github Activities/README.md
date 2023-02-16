@@ -223,8 +223,8 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 - Use group by on repo_id column because it is an identifier.
 - Get repo_id, the sum of stars, forks, and pushes for every day.
 - Repo_name can be changed in that month, so I only get the repo_name on the last day.
-- There is an easier way to get the first day of previous month in BigQuery like: `SELECT date_add(current_date(), INTERVAL -1 month) `. But if on `2023-02-02` I need to run task for testing on date `2023-02-01`, the `current_day()` will be changed to `'2023-02-02'`, not `'2023-02-01'`. Therefore, the `Where` statement would be `date >= '2023-01-02'`. This is wrong.
-- It is better to use [airflow macros](https://airflow.apache.org/docs/apache-airflow/1.10.3/macros.html) to handle dates, not only in this query but also all dates in other queries.
+- There is an easier way to get the first day of previous month in BigQuery like: `date_add(current_date(), INTERVAL -1 month)`. But if on `2023-02-02` I need to run task for testing on date `2023-02-01`, the `current_day()` will be changed to `'2023-02-02'`, not `'2023-02-01'`. Therefore, the `Where` statement would be `date >= '2023-01-02'`. This is wrong. Use `ds` instead of `current_day()` like <br>`date_add({'{{ ds }}'}, INTERVAL -1 month)`.
+- It is better to use [airflow macros](https://airflow.apache.org/docs/apache-airflow/1.10.3/macros.html) to handle dates, not only in this query but also all dates in other queries. 
 
 #### Next job is to get all story in Hacker News dataset with url is a github repo.
 
@@ -352,8 +352,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
             FROM
                 `{GCP_PJ}.{GCP_DATASET}.INFORMATION_SCHEMA.TABLES`
             WHERE
-                table_name = "github_monthly_report_{
-                '{{ macros.ds_format(yesterday_ds, "%Y-%m-%d", "%m%Y") }}'}"
+                table_name = "github_monthly_report_{'{{ macros.ds_format(yesterday_ds, "%Y-%m-%d", "%m%Y") }}'}"
         """,
         use_legacy_sql=False,
         trigger_rule='all_success',
