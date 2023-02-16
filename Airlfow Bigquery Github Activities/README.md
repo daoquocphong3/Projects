@@ -215,7 +215,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
             FROM
                 `{GCP_PJ}.{GCP_DATASET}.github_daily_events`
             WHERE
-                date >= DATE_ADD(CURRENT_DATE(), INTERVAL -1 month)
+                date >= "{'{{ macros.ds_add(ds, - macros.datetime.strptime(yesterday_ds, "%Y-%m-%d").day) }}'}"
             GROUP BY
                 repo_id),
 ```
@@ -223,6 +223,8 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 - Use group by on repo_id column because it is an identifier.
 - Get repo_id, the sum of stars, forks, and pushes for every day.
 - Repo_name can be changed in that month, so I only get the repo_name on the last day.
+- There is an easier way to get the first day of previous month in BigQuery like: `SELECT date_add(current_date(), INTERVAL -1 month) `. But if on `2023-02-02` I need to run task for testing on date `2023-02-01`, the `current_day()` will be changed to `'2023-02-02'`, not `'2023-02-01'`. Therefore, the `Where` statement would be `date >= '2023-01-02'`. This is wrong.
+- It is better to use [airflow macros](https://airflow.apache.org/docs/apache-airflow/1.10.3/macros.html) to handle dates, not only in this query but also all dates in other queries.
 
 #### Next job is to get all story in Hacker News dataset with url is a github repo.
 
@@ -231,9 +233,9 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
     hn_agg AS (
         SELECT
             REGEXP_EXTRACT(url, 'https?://github.com/([^/]+/[^/#?]+)') AS url,
-            ANY_VALUE(title
+            ANY_VALUE(struct(id, title)
                 HAVING
-                MAX score) AS title,
+                MAX score) AS story,
             MAX(score) AS score
         FROM
             `bigquery-public-data.hacker_news.full`
@@ -249,6 +251,7 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 - There are many stories pointing to the same url. I only chose the one with the most score.
 - Each story only appears in one row and the score is updated in that row (I guess, there is no more clarification on the score matter) so I ignore creation date of the event.
 - Use REGEXP_EXTRACT only the the repo_name (cut off "htpps://" )
+- Another way to get hn.id and hn.title is using two ANY_VALUE functions, but the result of ANY_VALUE function is nondeterministic not randomly(state in documentary). If there are two rows with max score, there will be no guarantee to get the id and title from the same row. Therefore, I use struct to make sure they are from the same row.
 
 #### Join those two table together and create the monthly report table:
 
@@ -257,7 +260,8 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
     SELECT
         repo_id,
         repo_name,
-        title AS hn_title,
+        hn.story.id AS hn_id,
+        hn.story.title AS hn_title,
         score AS hn_score,
         stars_this_month,
         forks_this_month,
@@ -271,16 +275,15 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 ```
 - Use LEFT JOIN cause I wanted to preserve all rows in github_agg. If repos don't have any Hacker News stories, the title and score will be null.
 - Some repos are changed name so they don't match the url that Hacker News point to. The simplest way to solve this problem is to store repo_name as an array and `LEFT JOIN ON hn.url in gh.repo_name`.
-- Since most of the repos that changed name are not popular, for this project I leave it that way.
+- Since most of the repos that changed name are small ones,and they are not likely to have a story; for this project I leave it that way.
 
 #### Whole task 6 code: 
 ```python
-    t6 = BigQueryOperator(
+        t6 = BigQueryOperator(
         task_id="write_to_github_monthly_report",
         sql=f"""
             #standardSQL
-            CREATE TABLE `{GCP_PJ}.{GCP_DATASET}.github_monthly_report_{
-                '{{ macros.ds_format(yesterday_ds, "%Y-%m-%d", "%m%Y") }}'}` as 
+            CREATE TABLE `{GCP_PJ}.{GCP_DATASET}.github_monthly_report_{'{{ macros.ds_format(yesterday_ds, "%Y-%m-%d", "%Y%m") }}'}` as 
             WITH
                 github_agg AS(
                     SELECT
@@ -294,16 +297,16 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
                     FROM
                         `{GCP_PJ}.{GCP_DATASET}.github_daily_events`
                     WHERE
-                        date >= DATE_ADD(CURRENT_DATE(), INTERVAL -1 month)
+                        date >= "{'{{ macros.ds_add(ds, - macros.datetime.strptime(yesterday_ds, "%Y-%m-%d").day) }}'}"
                     GROUP BY
                         repo_id),
 
                 hn_agg AS (
                     SELECT
                         REGEXP_EXTRACT(url, 'https?://github.com/([^/]+/[^/#?]+)') AS url,
-                        ANY_VALUE(title
+                        ANY_VALUE(struct(id, title)
                             HAVING
-                            MAX score) AS title,
+                            MAX score) AS story,
                         MAX(score) AS score
                     FROM
                         `bigquery-public-data.hacker_news.full`
@@ -317,7 +320,8 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
             SELECT
                 repo_id,
                 repo_name,
-                title AS hn_title,
+                hn.story.id AS hn_id,
+                hn.story.title AS hn_title,
                 score AS hn_score,
                 stars_this_month,
                 forks_this_month,
