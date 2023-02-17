@@ -21,6 +21,7 @@
 - Using SVD to predict recommendation
 
 ### Graph 
+- Ues Pyspark to extract edges from raw data.
 - Community Detection with Girvan-Newman(from scratch and compare result with NetworkX)
 
 ### Vietnamese Sentiment Analysis
