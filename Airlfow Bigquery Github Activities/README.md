@@ -445,9 +445,10 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 ## Reference: 
 - This project is inspired by [Tuan Vu](https://www.youtube.com/@tuan-vu), who make this [airflow tutorial](https://www.youtube.com/watch?v=wAyu5BN3VpY&list=PLYizQ5FvN6pvIOcOd6dFZu3lQqc6zBGp2&index=6) on Youtube.
-- The code of him is very old(4 years ago), so most of the code above is writed be me with some research through documentaries and code helping site like StackOverFlow. 
+- The code of him is very old(4 years ago), it not even work Most of the code above is written by me with some research through documentaries and code helping site like StackOverFlow. 
 - There are some problems within the tutorial that I already handle as mention above, like:
     - He group by GitHub Archive with repo.name, leading to there are multiple rows of the same repo.ids. Which I handle above with repo name changing problem.
     - He retrieve data from Hacker News daily and filter by creation date, and get a sum score for an story. Which is not right for me. Cause when I check, each story contain in one rows, there is no need to sum. And if the story increase the score after that day, the score the collected can not be updated.
+    - He create Hacker News table, which I am not because the help of CTEs.
     - He did not use trigger_rule as well as check for state of the task, which I did(for this project, that not really shine but for others project when I need to check for state of some task of another dag, that would help a lots).
     - He did not mention anything about paritioned table, he just created one by default of airflow and write into each. Which is not possible now, BigQuery force user to create a paritioned table before write data into it (I can set airflow to create partitioned table if needed by specific the time-unit column, but that way there are some options I can not set, so I chose create it beforehand).
