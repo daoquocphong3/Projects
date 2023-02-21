@@ -9,7 +9,7 @@
 
 ### Crawl Comment Of Restaurant: [1.2 - Foody - Crawl cmt.ipynb](https://github.com/daoquocphong3/Projects/blob/main/Restaurant%20Analysis%20(long%20project)/Code/1.2%20-%20Foody%20-%20Crawl%20cmt.ipynb)
 - Using Requests.get() call API, and json_normalize to transform json result into Pandas table.(only crawl for 60K restaurant intersection of Foody and ShopeeFood)
-- Using Threading to speed-up the process.
+- Using MultiThreading to speed-up the process.
 - <ins>**Result**</ins>: A table contains 319.378 rows and 64 columns.
    
 ![image](https://user-images.githubusercontent.com/55779400/220302474-eddd8bfc-079b-4321-953f-05fe92676b1e.png)
@@ -19,7 +19,7 @@
 - Use [Appium](https://appium.io/) to control the Virtual Android.
 - <ins>**Result**</ins>: Some API of ShopeeFood.
 
-### Extract Restaurant IDs:
+### Extract Restaurant IDs: [2.1 Scan location.ipynb](https://github.com/daoquocphong3/Projects/blob/main/Restaurant%20Analysis%20(long%20project)/Code/2.1%20Scan%20location.ipynb)
 - Using [Nominatim](https://nominatim.org/) to get a grid of longtitudes and lattitudes of HCM city like: 
 
 ![image](https://user-images.githubusercontent.com/55779400/220310132-475f8532-1925-42fe-8a2e-b707eee2eea3.png)
@@ -29,23 +29,44 @@
 
 ![image](https://user-images.githubusercontent.com/55779400/220312115-505a12f0-e95f-4ac5-8eef-19657bd9e217.png)
 
-### Crawl Restaurant's Information:
+### Crawl Restaurant's Information: [2.2 Shopee - Crawl restaurants.ipynb](https://github.com/daoquocphong3/Projects/blob/main/Restaurant%20Analysis%20(long%20project)/Code/2.2%20Shopee%20-%20Crawl%20restaurants.ipynb)
 - Using Request.get() call API of ShopeeFood.
-- <ins>**Result**</ins>: A table contains 80.072 rows and 22 columns. 
+- <ins>**Result**</ins>: A table contains 80.072 rows and 21 columns. 
 
 ![image](https://user-images.githubusercontent.com/55779400/220314126-40f3da9d-c976-402f-aeee-1c6b3b1a5b38.png)
 
-### Crawl Dishes Information:
+### Crawl Dishes Information: [2.3 Shopee - Crawl dishes.ipynb](https://github.com/daoquocphong3/Projects/blob/main/Restaurant%20Analysis%20(long%20project)/Code/2.3%20Shopee%20-%20Crawl%20dishes.ipynb)
 - Using Request.get() call API of ShopeeFood.
-- <ins>**Result**</ins>: A table contains 3.090.871 rows and 20 columns.
+- <ins>**Result**</ins>: A table contains 3.090.871 rows and 19 columns.
 
 ![image](https://user-images.githubusercontent.com/55779400/220380522-7de71b22-67ed-410d-a76b-4e0663a1e5b5.png)
 
 
 
-### Crawl Topping Data for Dishes: 
-- Get
+### Crawl Topping Data for Dishes: [2.4 - Shopee - CrawlToppingData.ipynb](https://github.com/daoquocphong3/Projects/blob/main/Restaurant%20Analysis%20(long%20project)/Code/2.4%20-%20Shopee%20-%20CrawlToppingData.ipynb)
+- Using MultiThreading and Request.get() call API of ShopeeFood to get topping of 1.867.802 dishes(from the intersection Restaurant).
+- Flatten and transform the json result into pandas dataframe.
+- <ins>**Result**</ins>: A table contains 3.295.914  rows and 22 columns.
 
+![image](https://user-images.githubusercontent.com/55779400/220430529-00002ad7-d7e5-48c5-b167-12d84556a85d.png)
 
+### Optimize Crawling process: [2.5 Shopee - Optimzie crawl restaurants and dishes.ipynb](https://github.com/daoquocphong3/Projects/blob/main/Restaurant%20Analysis%20(long%20project)/Code/2.5%20Shopee%20-%20Optimzie%20crawl%20restaurants%20and%20dishes.ipynb)
+- Using MultiThreading to speed-up crawling process for Shopee.
+- Load all data into parquet format to reduce size of data.
+- <ins>**Result**</ins>: All crawling process used to consume **20 hours** can run within **2 hours**. 
+
+### EDA And Model Data For Better Analyzing And Visualization: 
+### [2.6 Shopee - EDA and Unify parquets.ipynb](https://github.com/daoquocphong3/Projects/blob/main/Restaurant%20Analysis%20(long%20project)/Code/2.6%20Shopee%20-%20EDA%20and%20Unify%20parquets.ipynb), [2.7 Shopee - EDA and Extract parquets.ipynb](https://github.com/daoquocphong3/Projects/blob/main/Restaurant%20Analysis%20(long%20project)/Code/2.7%20Shopee%20-%20EDA%20and%20Extract%20parquets.ipynb)
+- Cleaning data: remove unwanted data, examinate the outlier, only choice valuable attribute to put into the SQLite3 database.
+- Gain overview and basic knowledge about the data.
+
+## Data Modeling: [3.1 Data Modeling.ipynb](https://github.com/daoquocphong3/Projects/blob/main/Restaurant%20Analysis%20(long%20project)/Code/3.1%20Data%20Modeling.ipynb)
+- Merge data from Foody and ShopeeFood app.
+- Design and create table schema for data.
+- Overall structure of the [Database](https://drive.google.com/file/d/1YipU3eMJLLDLgcV8MGhxXXpRcvfC95lg/view):
+
+![diagram](https://user-images.githubusercontent.com/55779400/220441368-e09dd7d8-bd5d-4eed-9ccb-9694889d08c8.png)
+
+<!-- ![image](https://user-images.githubusercontent.com/55779400/220433755-e3dfea59-3aa1-44af-a000-0399fba53234.png) -->
 
 ![image](https://user-images.githubusercontent.com/55779400/220056980-810b1316-4fa5-4456-a971-312821c33a56.png)
