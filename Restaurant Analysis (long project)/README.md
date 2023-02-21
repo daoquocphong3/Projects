@@ -20,7 +20,7 @@
 - <ins>**Result**</ins>: Some API of ShopeeFood.
 
 ### Extract Restaurant IDs:
-- Using [Nominatim](https://nominatim.org/) to get a grid of longtitudes and lattitudes like:
+- Using [Nominatim](https://nominatim.org/) to get a grid of longtitudes and lattitudes of HCM city like: 
 
 ![image](https://user-images.githubusercontent.com/55779400/220310132-475f8532-1925-42fe-8a2e-b707eee2eea3.png)
 
@@ -35,7 +35,16 @@
 
 ![image](https://user-images.githubusercontent.com/55779400/220314126-40f3da9d-c976-402f-aeee-1c6b3b1a5b38.png)
 
-### Crawl 
+### Crawl Dishes Information:
+- Using Request.get() call API of ShopeeFood.
+- <ins>**Result**</ins>: A table contains 3.090.871 rows and 20 columns.
+
+![image](https://user-images.githubusercontent.com/55779400/220380522-7de71b22-67ed-410d-a76b-4e0663a1e5b5.png)
+
+
+
+### Crawl Topping Data for Dishes: 
+- Get
 
 
 
