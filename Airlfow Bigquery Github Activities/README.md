@@ -506,7 +506,8 @@ Here is Google Data Stuido DashBoard for the result tables: [GitHub Activities J
 
 
 The values inside two tables can be change thanks to Custome Query and date range parameters: 
-```WITH
+```
+WITH
 	github_agg AS(
 	    SELECT
 	        repo_id,
