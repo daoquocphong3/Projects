@@ -65,8 +65,16 @@
 - Design and create table schema for data.
 - Overall structure of the [Database](https://drive.google.com/file/d/1YipU3eMJLLDLgcV8MGhxXXpRcvfC95lg/view):
 
-![diagram](https://user-images.githubusercontent.com/55779400/220441368-e09dd7d8-bd5d-4eed-9ccb-9694889d08c8.png)
+![diagram](https://user-images.githubusercontent.com/55779400/220547979-c2ed3419-49de-4510-b587-30571ea2813a.png)
 
-<!-- ![image](https://user-images.githubusercontent.com/55779400/220433755-e3dfea59-3aa1-44af-a000-0399fba53234.png) -->
+## Visualization:
+- We create [Power BI](https://app.powerbi.com/groups/me/reports/1925003b-32bb-463b-b593-7d7307fd9810?ctid=40127cd4-45f3-49a3-b05d-315a43a9f033&pbi_source=linkShare&bookmarkGuid=f9b5fb9e-dd14-4c96-a3f6-ca390ce32da8) ( [Power BI file](https://drive.google.com/file/d/1qWlmexHhkaAQj391D9NMRutz9Boj3MvC/view?usp=share_link) if my account expires) dashboard to help user find the dish they like by dish name or the address they are in.
+
+![image](https://user-images.githubusercontent.com/55779400/220550393-48be7dc2-479f-40b0-85cf-0f487960cad6.png)
+
 
 ![image](https://user-images.githubusercontent.com/55779400/220056980-810b1316-4fa5-4456-a971-312821c33a56.png)
+
+## Conlusion:
+- There are still a lots of attribute we have not inspected yet and a lot more insight can get from the dataset.
+- The data model we provide can be use for more analysing later on.
