@@ -1,8 +1,5 @@
 # Airflow Pineline BigQuery Github Acticvities (Monthly report)
-## Visualization: 
-Here is Google Data Stuido DashBoard for the results table: [GitHub Activities Jan 2023](https://lookerstudio.google.com/s/nNe2JozhK88)<br>
-- Star and Hacker News Score are for the popularity of Repo.
-- Forks and Push are for the developing status of repo.
+
 
 ## Dataset:
 In this project, I use 2 public datasets of google Bigquery: Github Archive and Hacker News
@@ -100,8 +97,6 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 
 
 - The table is big, with about 25 million rows for 31 days in January 2023. So I partitioned it by date to reduce the cost of querying on the table.
-- Ingestion time partitioning reduces the stored size of the table by putting the date column to \_PARTITIONTIME(a pseudocolumn). 
-- But when I plug the table into Google Data Studio, the \_PARTITIONTIME didn't appear so I choose Time-unit column partitioning instead.
 - By the way, [PyPI package downloads](https://console.cloud.google.com/bigquery?p=bigquery-public-data&d=pypi&page=dataset&project=apply-ds-test-371316) table is Time-unit column partitioning too, each partition contains on average 700 million rows.
 - More info about [BigQuery Partitioned Table](https://cloud.google.com/bigquery/docs/partitioned-tables?_ga=2.103336576.-1647680310.1670343964)
 - Query create the Github_daily_events table: <br>
@@ -429,14 +424,35 @@ More about INFORMATION_SCHEMA: [INFORMATION_SCHEMA](https://cloud.google.com/big
 - As expected, task1 only run on 01/02/2023, and on that day all tasks are completed successfully.
 - Other days, only 3 tasks were completed successfully.
 
-## Lessons learn after this project: 
+## Visualization: 
+Here is Google Data Stuido DashBoard for the result tables: [GitHub Activities Jan 2023](https://lookerstudio.google.com/s/nNe2JozhK88)<br>
+- Star and Hacker News Score are for the popularity of Repo.
+- Forks and Push are for the developing status of repo.
+
+![image](https://user-images.githubusercontent.com/55779400/220698287-2a7bc50a-6530-41e5-80a9-6a18464bc25d.png)
+
+## Things can be improved in this project: 
 
 - The task flow diagram and the execution grid are awkward.
+- Use Ingestion-time partitioned table to reduce table size.
 - It is better to create two separated dags:
     - One for retrieving daily GitHub activities (run daily).
     - And the other is for creating monthly reports (run on the first day of each month)
 - That way the successful run would be all task run successfully. Then we can receive emails on retries or failures.
-- Cut the customed result message task, cause that is unnecessary. Now each dag has a single duty, there is only a need to receive successful dag_run emails.
+- The data of the 2 table in Dashboard cannot be changed. It better to create the Summary table in As a customed query in Google Data Studio
+
+## Impoved: 
+### Daily Dag for extracting data from GithubArchive:
+![image](https://user-images.githubusercontent.com/55779400/220709777-1c91955d-7d8b-412f-be94-34c08c846492.png)
+
+### Monthly Dag check if everyday of the last month dag run successully:
+
+![image](https://user-images.githubusercontent.com/55779400/220709699-66dee449-1256-4f84-99e8-e6cf41951dd2.png)
+
+![image](https://user-images.githubusercontent.com/55779400/220709579-bc5c4637-d6b7-469c-a2ae-3fa0e8780714.png)
+
+### Visualization: 
+
 
 
 
