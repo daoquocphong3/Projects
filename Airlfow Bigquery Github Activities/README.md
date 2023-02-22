@@ -490,6 +490,7 @@ Here is Google Data Stuido DashBoard for the result tables: [GitHub Activities J
 
 
 ### Visualization: [Google Data Studio](https://lookerstudio.google.com/reporting/60f4a7ac-3ce6-4a95-bc2f-99afa3ba2ef8)
+The values inside two tables can be change thanks to Custome Query and date range parameters: 
 
 ### Github Activities in January 2023
 
@@ -502,61 +503,6 @@ Here is Google Data Stuido DashBoard for the result tables: [GitHub Activities J
 ### Github Activities in December 2022 and January 2023
 
 ![image](https://user-images.githubusercontent.com/55779400/220718019-c802700a-5296-444f-88f5-d56aad9ea677.png)
-
-
-
-The values inside two tables can be change thanks to Custome Query and date range parameters: 
-```
-WITH
-	github_agg AS(
-	    SELECT
-	        repo_id,
-	        ANY_VALUE(repo_name
-	            HAVING
-	            max _PARTITIONTIME) AS repo_name,
-	        SUM(stars) AS stars_this_month,
-	        SUM(forks) AS forks_this_month,
-	        SUM(pushes) AS pushes_this_month,
-	    FROM
-	        `github_trends.github_daily_events2`
-	    WHERE
-	        _PARTITIONTIME >= PARSE_TIMESTAMP('%Y%m%d', @DS_START_DATE)
-      		AND _PARTITIONTIME <= PARSE_TIMESTAMP('%Y%m%d', @DS_END_DATE)
-	    GROUP BY
-	        repo_id),
-
-	hn_agg AS (
-	    SELECT
-	        REGEXP_EXTRACT(url, 'https?://github.com/([^/]+/[^/#?]+)') AS url,
-            ANY_VALUE(struct(id, title)
-                HAVING
-                MAX score) AS story,
-            MAX(score) AS score
-        FROM
-            `bigquery-public-data.hacker_news.full`
-        WHERE
-            type = 'story'
-            AND url LIKE '%://github.com/%'
-            AND url NOT LIKE '%://github.com/blog/%'
-        GROUP BY
-            url)
-
-SELECT
-    repo_id,
-    repo_name,
-    hn.story.id AS hn_id,
-    hn.story.title AS hn_title,
-    score AS hn_score,
-    stars_this_month AS Stars,
-    forks_this_month AS Forks,
-    pushes_this_month AS Pushes
-FROM
-    github_agg gh
-LEFT JOIN
-    hn_agg hn
-ON
-    gh.repo_name = hn.url
-```
 
 
 
