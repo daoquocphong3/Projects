@@ -494,16 +494,20 @@ The values inside two tables can be change thanks to Custome Query and date rang
 
 ### Github Activities in January 2023
 
-![image](https://user-images.githubusercontent.com/55779400/220717600-bb40c35f-5179-4444-85b5-1915f85f86d3.png)
+![image](https://user-images.githubusercontent.com/55779400/220724871-4e9d6eeb-f258-486c-b96f-13f971f5664b.png)
+
+<!-- ![image](https://user-images.githubusercontent.com/55779400/220717600-bb40c35f-5179-4444-85b5-1915f85f86d3.png) -->
 
 ### Github Activities in December 2022
 
-![image](https://user-images.githubusercontent.com/55779400/220718405-601daf67-18bc-40a2-8c14-1c734948524e.png)
+<!-- ![image](https://user-images.githubusercontent.com/55779400/220718405-601daf67-18bc-40a2-8c14-1c734948524e.png) -->
+
+![image](https://user-images.githubusercontent.com/55779400/220724354-0745683a-b695-4986-b2f6-4dfff872d7cc.png)
+
 
 ### Github Activities in December 2022 and January 2023
 
-![image](https://user-images.githubusercontent.com/55779400/220718019-c802700a-5296-444f-88f5-d56aad9ea677.png)
-
+![image](https://user-images.githubusercontent.com/55779400/220725364-1c5ac223-a273-4fa3-afd9-0fe0c76b3066.png)
 
 
 ## Reference: 
