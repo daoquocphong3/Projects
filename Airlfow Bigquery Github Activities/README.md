@@ -443,15 +443,53 @@ Here is Google Data Stuido DashBoard for the result tables: [GitHub Activities J
 
 ## Impoved: 
 ### Daily Dag for extracting data from GithubArchive:
-- Check 
+- Write new partition into Ingestion-time Partitioned table every day.
 ![image](https://user-images.githubusercontent.com/55779400/220709777-1c91955d-7d8b-412f-be94-34c08c846492.png)
 
 ### Monthly Dag check if everyday of the last month dag run successully:
+- Check status of Dag run every day in previous month, if the lastest dag_run of each day is success and no missing any day, print succesful message.
+
 
 ![image](https://user-images.githubusercontent.com/55779400/220709699-66dee449-1256-4f84-99e8-e6cf41951dd2.png)
 
 ![image](https://user-images.githubusercontent.com/55779400/220709579-bc5c4637-d6b7-469c-a2ae-3fa0e8780714.png)
 
+```
+    def print_result(**kwargs):
+        execute_date = kwargs['ds']
+        date = datetime.strptime(str(execute_date), "%Y-%m-%d").date()
+
+        dag_runs = DagRun.find(dag_id='BigQuery_Github_daily_v1')
+        dag_runs = [dag_run for dag_run in dag_runs if dag_run.execution_date.date() <= date and dag_run.execution_date.date() > (date - relativedelta(months = 1))]
+
+        yesterday = date - timedelta(days=1)
+
+        dates = set(dag.execution_date.date() for dag in dag_runs)
+        if len(dates) < yesterday.day:
+            missing_dates = []
+            start_date_ = (date - relativedelta(months = 1) + timedelta(days=1))
+            for i in range(date.day):
+                temp_date = start_date_ + timedelta(days=i)
+                if temp_date not in dates:
+                    missing_dates.append(temp_date)
+            print(f'Month {yesterday.month} year {yesterday.year} github check failed!\nThese days missing: {missing_dates}')
+            return
+
+        dag_runs.sort(key=lambda x: x.execution_date)
+
+        failed_dates = []
+        for i in range(len(dag_runs)):
+            if i < len(dag_runs)-1 and (dag_runs[i].execution_date.date() == dag_runs[i+1].execution_date.date()):
+                    pass
+            else:
+                if dag_runs[i].state != 'success':
+                    failed_dates.append(datetime.strftime(dag_runs[i].execution_date.date(), "%Y-%m-%d"))
+
+        if not len(failed_dates):
+            print(f'Month {yesterday.month} year {yesterday.year} Github check succesfully!')
+        else:
+            print(f'Month {yesterday.month} year {yesterday.year} Github check failed!\nThese days failed to run github: {failed_dates}')
+```
 
 
 ### Visualization: [Google Data Studio](https://lookerstudio.google.com/reporting/60f4a7ac-3ce6-4a95-bc2f-99afa3ba2ef8)
