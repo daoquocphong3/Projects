@@ -1,6 +1,3 @@
-# Airflow Pineline BigQuery Github Acticvities (Monthly report)
-
-
 ## Dataset:
 In this project, I use 2 public datasets of google Bigquery: Github Archive and Hacker News
 ### Github Archive:
