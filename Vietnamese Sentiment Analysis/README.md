@@ -1,9 +1,9 @@
 # Vietnamese Sentiment Analysis
 
 ## Crawl Data
-Using selenium to crawl data of mobile phones from Thegioididong and Shopee.
+- Using selenium to crawl data of mobile phones from Thegioididong and Shopee.
 
-Using API crawl data from FPT Shop
+- Using API crawl data from FPT Shop (handle security key of the API)
 
 ## Preprocessing Data
 - Remove emoji
