@@ -441,11 +441,15 @@ Here is Google Data Stuido DashBoard for the result tables: [GitHub Activities J
 ## Impoved: 
 ### Daily Dag for extracting data from GithubArchive:
 - Write new partition into Ingestion-time Partitioned table every day.
+
+![image](https://user-images.githubusercontent.com/55779400/220970030-2b4e007c-47f2-4059-b402-e93e46a276b8.png)
+
 ![image](https://user-images.githubusercontent.com/55779400/220709777-1c91955d-7d8b-412f-be94-34c08c846492.png)
 
 ### Monthly Dag check if everyday of the last month dag run successully:
 - Check status of Dag run every day in previous month, if the lastest dag_run of each day is success and no missing any day, print succesful message.
 
+![image](https://user-images.githubusercontent.com/55779400/220969840-f514bdc1-168e-481f-86b0-c89b242c6948.png)
 
 ![image](https://user-images.githubusercontent.com/55779400/220709699-66dee449-1256-4f84-99e8-e6cf41951dd2.png)
 
