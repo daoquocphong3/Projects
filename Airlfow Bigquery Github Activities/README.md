@@ -489,7 +489,7 @@ Here is Google Data Stuido DashBoard for the result tables: [GitHub Activities J
 ```
 
 
-### Visualization: [Google Data Studio](https://lookerstudio.google.com/reporting/60f4a7ac-3ce6-4a95-bc2f-99afa3ba2ef8)
+### Visualization: [Github Activities DashBoard](https://lookerstudio.google.com/reporting/60f4a7ac-3ce6-4a95-bc2f-99afa3ba2ef8)
 The values inside two tables can be change thanks to Custome Query and date range parameters: 
 
 ### Github Activities in January 2023
